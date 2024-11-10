@@ -1,23 +1,26 @@
 import { useState } from "react";
-
+import axios from "axios";
 function Signup({ setUser }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSignup = () => {
-    if (username && password && confirmPassword) {
-      localStorage.setItem(
-        "user",
-        JSON.stringify({ username, password, confirmPassword })
-      );
-      setUser({ username });
-      alert("Signup successful! You can now log in.");
-      setUsername("");
-      setPassword("");
-      setConfirmPassword("");
+  const handleSignup = async () => {
+    if (username && password && password === confirmPassword) {
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/api/auth/register",
+          { username, password }
+        );
+        localStorage.setItem("user", JSON.stringify({ username }));
+        setUser({ username });
+        alert("Signup successful! You can now log in.");
+        navigate("/login");
+      } catch (error) {
+        alert(`Signup failed: ${error.response.data.message}`);
+      }
     } else {
-      alert("Please fill in all fields.");
+      alert("Please make sure all fields are filled and passwords match.");
     }
   };
 

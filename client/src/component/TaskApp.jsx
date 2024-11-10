@@ -1,36 +1,73 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TaskList from "./TaskList";
+import {
+  fetchTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+} from "../Services/service";
 
 function TaskApp() {
   const [tasks, setTasks] = useState([]);
   const [taskText, setTaskText] = useState("");
   const [editIndex, setEditIndex] = useState(null);
   const [editText, setEditText] = useState("");
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const initFetch = async () => {
+      try {
+        const response = await fetchTasks(token);
+        setTasks(response.data);
+      } catch (error) {
+        console.error("Failed to fetch tasks:", error);
+      }
+    };
+    initFetch();
+  }, [token]);
 
   const handleTaskText = (e) => {
     setTaskText(e.target.value);
   };
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (taskText.trim() === "") return;
-    setTasks([...tasks, { text: taskText, isCompleted: false }]);
-    setTaskText("");
+    try {
+      const response = await createTask({ text: taskText }, token);
+      setTasks([...tasks, response.data]);
+      setTaskText("");
+    } catch (error) {
+      console.error("Failed to add task:", error);
+    }
   };
 
-  const handleDeleteTask = (indexToDelete) => {
-    const updatedTasks = tasks.filter((_, index) => index !== indexToDelete);
-    setTasks(updatedTasks);
+  const handleDeleteTask = async (id) => {
+    try {
+      await deleteTask(id, token);
+      const updatedTasks = tasks.filter((task) => task._id !== id);
+      setTasks(updatedTasks);
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (editText.trim() === "") return;
-    const updatedTasks = tasks.map((task, ind) =>
-      ind === editIndex ? { ...task, text: editText } : task
-    );
-
-    setTasks(updatedTasks);
-    setEditIndex(null);
-    setEditText("");
+    try {
+      const response = await updateTask(
+        tasks[editIndex]._id,
+        { text: editText },
+        token
+      );
+      const updatedTasks = tasks.map((task, ind) =>
+        ind === editIndex ? response.data : task
+      );
+      setTasks(updatedTasks);
+      setEditIndex(null);
+      setEditText("");
+    } catch (error) {
+      console.error("Failed to update task:", error);
+    }
   };
 
   const handleEditTask = (index) => {
@@ -38,11 +75,21 @@ function TaskApp() {
     setEditText(tasks[index].text);
   };
 
-  const handleCompletedTask = (index) => {
-    const updatedTasks = tasks.map((task, ind) =>
-      ind === index ? { ...task, isCompleted: !task.isCompleted } : task
-    );
-    setTasks(updatedTasks);
+  const handleCompletedTask = async (index) => {
+    const taskToUpdate = tasks[index];
+    const updatedTask = {
+      ...taskToUpdate,
+      isCompleted: !taskToUpdate.isCompleted,
+    };
+    try {
+      const response = await updateTask(taskToUpdate._id, updatedTask, token);
+      const updatedTasks = tasks.map((task, ind) =>
+        ind === index ? response.data : task
+      );
+      setTasks(updatedTasks);
+    } catch (error) {
+      console.error("Failed to toggle task completion:", error);
+    }
   };
 
   return (
@@ -51,7 +98,6 @@ function TaskApp() {
         <h1 className="text-xl font-bold">Todo-App</h1>
       </div>
       <hr />
-
       <div>
         <div className="flex items-center space-x-2">
           <input

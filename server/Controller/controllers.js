@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
 import Task from "../models/task.model.js";
-
+import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 export const Register = async (req, res) => {
@@ -18,8 +18,12 @@ export const Login = async (req, res) => {
   const { username, password } = req.body;
   try {
     const user = await User.findOne({ username });
-    if (!user || bcrypt.compareSync(password, user.password)) {
-      return res.status(400).json({ message: "Invalid Credentials" });
+    if (!user) {
+      return res.status(400).json({ message: "User Not Found" });
+    }
+    const isPasswordCOrrect = bcrypt.compareSync(password, user.password);
+    if (!isPasswordCOrrect) {
+      return res.status(400).json({ message: "Password Incorrest" });
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -27,6 +31,7 @@ export const Login = async (req, res) => {
     });
     res.json({ token });
   } catch (e) {
+    console.log(e);
     res.status(400).json({ message: "Error Logging in" });
   }
 };

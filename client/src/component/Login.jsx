@@ -1,20 +1,27 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../Services/service";
 
 function Login({ setUser }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    const savedUser = JSON.parse(localStorage.getItem("user"));
-    if (
-      savedUser &&
-      savedUser.username === username &&
-      savedUser.password === password
-    ) {
-      setUser({ username });
-      alert("Login successful!");
-    } else {
-      alert("Invalid credentials.");
+  const handleLogin = async () => {
+    try {
+      const response = await loginUser({ username, password });
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        setUser({ username });
+        navigate("/tasks");
+      } else {
+        alert("Login failed. Please check your username and password.");
+      }
+    } catch (error) {
+      alert(
+        "Login failed. Error: " +
+          (error.response?.data?.message || "Unknown error")
+      );
     }
   };
 

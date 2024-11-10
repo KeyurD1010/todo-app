@@ -3,7 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
-// import mongoose from "mongoose";
 import connectDB from "./databaseConfig/DbConfig.js";
 
 const PORT = process.env.PORT || 5000;
