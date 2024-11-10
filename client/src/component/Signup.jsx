@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { registerUser } from "../Services/service";
 function Signup({ setUser }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -7,18 +8,16 @@ function Signup({ setUser }) {
 
   const handleSignup = async () => {
     if (username && password && password === confirmPassword) {
-      try {
-        const response = await axios.post(
-          "http://localhost:5000/api/auth/register",
-          { username, password }
-        );
-        localStorage.setItem("user", JSON.stringify({ username }));
-        setUser({ username });
-        alert("Signup successful! You can now log in.");
-        navigate("/login");
-      } catch (error) {
-        alert(`Signup failed: ${error.response.data.message}`);
-      }
+      await registerUser({ username, password, confirmPassword })
+        .then((resp) => {
+          localStorage.setItem("user", JSON.stringify({ username }));
+          setUser({ username });
+          alert("Signup successful! You can now log in.");
+          navigate("/login");
+        })
+        .catch((err) => {
+          alert(`Signup failed: ${err.response.data.message}`);
+        });
     } else {
       alert("Please make sure all fields are filled and passwords match.");
     }

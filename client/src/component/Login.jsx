@@ -8,21 +8,23 @@ function Login({ setUser }) {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    try {
-      const response = await loginUser({ username, password });
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        setUser({ username });
-        navigate("/tasks");
-      } else {
-        alert("Login failed. Please check your username and password.");
-      }
-    } catch (error) {
-      alert(
-        "Login failed. Error: " +
-          (error.response?.data?.message || "Unknown error")
-      );
-    }
+    await loginUser({ username, password })
+      .then((resp) => {
+        if (resp.token) {
+          localStorage.setItem("user", resp.username);
+          localStorage.setItem("token", resp.token);
+          setUser({ username });
+          navigate("/tasks");
+        } else {
+          alert("Login failed. Please check your username and password.");
+        }
+      })
+      .catch((err) => {
+        alert(
+          "Login failed. Error: " +
+            (err.response?.data?.message || "Unknown error")
+        );
+      });
   };
 
   return (

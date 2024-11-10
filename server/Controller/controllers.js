@@ -29,7 +29,7 @@ export const Login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "12h",
     });
-    res.json({ token });
+    res.json({ token, username });
   } catch (e) {
     console.log(e);
     res.status(400).json({ message: "Error Logging in" });
@@ -43,7 +43,7 @@ export const getTasks = async (req, res) => {
 
 export const createTask = async (req, res) => {
   const { taskText } = req.body;
-  const newTask = new Task({ text, user: req.user.id });
+  const newTask = new Task({ taskText, user: req.user.id });
 
   await newTask.save();
   res.status(201).json(newTask);

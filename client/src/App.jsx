@@ -27,7 +27,7 @@ function App() {
           </button>
         </>
       ) : (
-        <TaskApp />
+        <TaskApp user={user} />
       )}
     </>
   );
